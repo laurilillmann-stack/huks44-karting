@@ -625,7 +625,7 @@ if (!IS_LAITSE) {
   T.P = []; for (let j = 0; j < n; j++) if (I0.ph[j] === 'B' && I0.ph[(j - 1 + n) % n] !== 'B') { const dv = I0.v[j] - Math.min(...Array.from({ length: 40 }, (_, q) => I0.v[(j + q) % n])); T.P.push({ i: j, hard: dv > 4, name: 'P' + (T.P.length + 1) }); }
   TD.lbl = T.corners.map(j => { const sg = -Math.sign(K[j]) || 1, w = (sg > 0 ? T.wallR[j] : T.wallL[j]) + 2.5; return [T.x[j] + T.nx[j] * w * sg, T.z[j] + T.nz[j] * w * sg]; });
 }
-const REAL = { hugo: 46.9, hugoOld: 65.287, kval: 61.491 };
+const REAL = { huks: 46.9, huksOld: 65.287, kval: 61.491 };
 const SEG_NAMES = T.corners.map((c, i) => String(i + 1));
 const fmt = t => { if (!isFinite(t) || t <= 0) return '–'; const m = Math.floor(t / 60), s = t - m * 60; return (m ? m + ':' + (s < 10 ? '0' : '') : '') + s.toFixed(3); };
 const kmh = v => Math.round(v * 3.6);
@@ -1359,9 +1359,9 @@ const startLights = [], lampSpots = []; let lampMat = null;
   const ftyre = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.1, 10, 20), stdM(0x111214, 0.9)); ftyre.rotation.x = Math.PI / 2; ftyre.position.y = 0.1; fl.add(ftyre);
   const fas = new THREE.Mesh(new THREE.BoxGeometry(36, 0.7, 0.3), stdM(0xb89464, 0.6)); fas.position.set(0, 4.75, -4.6 * OUT); can.add(fas);
 })();
-const ghosts = { coach: makeKart(0x40c4ff, true), best: makeKart(0xffffff, true), hugo: makeKart(0xffd600, true) };
-const HKEY = 'laitse-hugo-ghost-v2';
-let hugoOn = false, hugoT = +(localStorage.getItem(HKEY) || REAL.hugo);
+const ghosts = { coach: makeKart(0x40c4ff, true), best: makeKart(0xffffff, true), huks: makeKart(0xffd600, true) };
+const HKEY = 'laitse-huks-ghost-v2';
+let huksOn = false, huksT = +(localStorage.getItem(HKEY) || REAL.huks);
 // ===== rain: wet track, less grip, darker sky, falling drops and puddles =====
 let wet = false, fast = false;
 const BASE = { mu: KP.mu, curbMu: KP.curbMu, grassMu: KP.grassMu, P: KP.P, Fmax: KP.Fmax, vRev: KP.vRev };
@@ -1410,10 +1410,10 @@ function applyMode() {
     for (const [v, l] of [[q * 2, coach.lat[j] - 0.16], [q * 2 + 1, coach.lat[j] + 0.16]]) { pa.setX(v, T.x[j] + T.nx[j] * l); pa.setZ(v, T.z[j] + T.nz[j] * l); ca.setXYZ(v, ...c); } }
   pa.needsUpdate = ca.needsUpdate = true; raceLine.geometry.computeBoundingSphere();
   $('kCoachT').textContent = fmt(coach.time);
-  hugoT = Math.max(hugoT, coach.time * 0.9);
+  huksT = Math.max(huksT, coach.time * 0.9);
 }
 function setFast(on) {
-  fast = on; applyMode(); if (fast) { hugoOn = true; ghostMode = 1; auto = true; } else auto = false; resetKart();
+  fast = on; applyMode(); if (fast) { huksOn = true; ghostMode = 1; auto = true; } else auto = false; resetKart();
   toast(on ? '🚀 <b>' + L('Laiade kurvide joon', 'Wide-corner line') + '</b><br>' + L('Joon on tõmmatud võimalikult sirgeks, kurvid on laiad. Sinine treener sõidab selle läbi ajaga ', 'The line is pulled as straight as the track allows, with wide corners. The blue coach drives it in ') + '<b>' + fmt(coach.time) + '</b>. ' + L('Kollane on Huks44 46.9. Praegu sõidab treener sinu kardiga (D = ise sõitma).', 'Yellow is Huks44 46.9. The coach is driving your kart now (D = drive yourself).') : L('Tagasi Huks44 kaardi joonele', 'Back to the line from Huks44\'s map') + ' · ' + L('treener ', 'coach ') + fmt(coach.time), 6);
 }
 // night: dark blue sky, the lamps shine and make bright pools of light on the track
@@ -1507,7 +1507,7 @@ hud.innerHTML = `
     ${IS_LAITSE ? `<div class="s">${L('Huks44 01.11 (RT10)', 'Huks44 01.11 (RT10)')} <b>46.900</b></div>` : ''}
     ${(typeof KART_RECORDS !== 'undefined' && KART_RECORDS[TRACK_ID] || []).map(r => `<div class="s" style="color:#ffb74d">${L(r[0], r[1])} <b>${fmt(r[2])}</b></div>`).join('')}
     <div class="s">${L('Viimane ring', 'Last lap')} <b id="kLastT">–</b></div>
-    <div class="s" id="kHugoRow" style="display:none;color:#ffd600">${L('Huks44-kummitus', 'Ghost Huks44')} <b id="kHugoG">–</b></div>
+    <div class="s" id="kHuksRow" style="display:none;color:#ffd600">${L('Huks44-kummitus', 'Ghost Huks44')} <b id="kHuksG">–</b></div>
   </div>
 </div>
 <div id="kTip"></div>
@@ -1536,8 +1536,8 @@ function onKey(k) {
   else if (k === 'p' || k === 'escape') { if (ana.style.display === 'block') toggleAna(false); else { paused = !paused; toast(paused ? '⏸ ' + L('PAUS', 'PAUSED') : '▶', 1.2); } }
   else if (k === 'o') { if (wizState) closeWizard(); else openWizard(); }
   else if (k === 'k') toggleRace();
-  else if (k === 'h') { hugoOn = !hugoOn; toast(hugoOn ? '👻 ' + L('Huks44-kummitus (kollane) sõidab ', 'Ghost Huks44 (yellow) drives ') + fmt(hugoT) + '<br><small>' + L('Aega muudad klahvidega - ja +', 'Change the time with - and +') + '</small>' : L('Huks44-kummitus väljas', 'Ghost Huks44 off'), 3.5); }
-  else if ((k === '-' || k === '+' || k === '=') && hugoOn) { hugoT = clamp(hugoT + (k === '-' ? -0.5 : 0.5), coach.time * 0.9, 150); try { localStorage.setItem(HKEY, String(hugoT)); } catch (e) {} toast('👻 ' + L('Huks44-kummitus: ', 'Ghost Huks44: ') + fmt(hugoT), 1.5); }
+  else if (k === 'h') { huksOn = !huksOn; toast(huksOn ? '👻 ' + L('Huks44-kummitus (kollane) sõidab ', 'Ghost Huks44 (yellow) drives ') + fmt(huksT) + '<br><small>' + L('Aega muudad klahvidega - ja +', 'Change the time with - and +') + '</small>' : L('Huks44-kummitus väljas', 'Ghost Huks44 off'), 3.5); }
+  else if ((k === '-' || k === '+' || k === '=') && huksOn) { huksT = clamp(huksT + (k === '-' ? -0.5 : 0.5), coach.time * 0.9, 150); try { localStorage.setItem(HKEY, String(huksT)); } catch (e) {} toast('👻 ' + L('Huks44-kummitus: ', 'Ghost Huks44: ') + fmt(huksT), 1.5); }
   else if (k === 'u') setWet(!wet);
   else if (k === 'n') setNight(!night);
   else if (k === 'q') { if (kMenu.style.display === 'none') openMenu(); }
@@ -1766,7 +1766,7 @@ function finishLap() {
   lastLap = rec.time;
   $('kLastT').textContent = fmt(rec.time) + (valid ? '' : ' ❌');
   let msg;
-  if (valid && (wet || auto)) msg = (auto ? '🤖 ' : '🌧 ') + L('Ring ', 'Lap ') + lapNo + ': <b>' + fmt(rec.time) + '</b>' + (hugoOn ? ' · Huks44 ' + fmt(hugoT) : '') + '<br><small>' + L('(treeneri ja vihma ringid ei lähe sinu parimasse)', '(coach and rain laps are kept out of your best)') + '</small>';
+  if (valid && (wet || auto)) msg = (auto ? '🤖 ' : '🌧 ') + L('Ring ', 'Lap ') + lapNo + ': <b>' + fmt(rec.time) + '</b>' + (huksOn ? ' · Huks44 ' + fmt(huksT) : '') + '<br><small>' + L('(treeneri ja vihma ringid ei lähe sinu parimasse)', '(coach and rain laps are kept out of your best)') + '</small>';
   else if (valid) {
     const entry = { time: +rec.time.toFixed(3), when: Date.now(), seg: segs.map(s => +s.mine.toFixed(3)), tips: tips.map(t => ({ corner: t.corner, code: t.code })) };
     save.laps.push(entry); if (save.laps.length > 40) save.laps.shift();
@@ -1807,11 +1807,11 @@ function makeAi() {
 // rivals learn from Huks44: their pace is set from his best lap on this track (best ever, or this event's if faster),
 // so some are a bit faster and some a bit slower. After each session they compare their real laps with the plan and correct themselves.
 const AKEY = 'kart-ai-learn-' + TRACK_ID, AI_SPREAD = [0.985, 0.993, 1.0, 1.008, 1.02];
-let aiLearn = { corr: 1, hugo: 0 };
+let aiLearn = { corr: 1, huks: 0 };
 try { const s = JSON.parse(localStorage.getItem(AKEY) || 'null'); if (s && s.corr) aiLearn = s; } catch (e) {}
-function hugoRef() { const t = [save.best && save.best.time, race.hugo && race.hugo.best, aiLearn.hugo].filter(x => x > 0); return t.length ? Math.min(...t) : 0; }
+function huksRef() { const t = [save.best && save.best.time, race.huks && race.huks.best, aiLearn.huks].filter(x => x > 0); return t.length ? Math.min(...t) : 0; }
 function aiPace() {
-  const hb = hugoRef();
+  const hb = huksRef();
   race.ai.forEach((a, i) => {
     const def = AI_DEF.find(d => d[0] === a.name)[1];
     a.target = hb ? hb * AI_SPREAD[i % AI_SPREAD.length] : 0;
@@ -1820,7 +1820,7 @@ function aiPace() {
 }
 function aiLearnFrom() {
   const r = race.ai.filter(a => a.target && a.best > 0).map(a => a.best / a.target);
-  if (race.hugo.best > 0 && (!aiLearn.hugo || race.hugo.best < aiLearn.hugo)) aiLearn.hugo = race.hugo.best;
+  if (race.huks.best > 0 && (!aiLearn.huks || race.huks.best < aiLearn.huks)) aiLearn.huks = race.huks.best;
   if (r.length) { const m = r.reduce((s, x) => s + x, 0) / r.length; aiLearn.corr = clamp(aiLearn.corr * Math.pow(m, 0.8), 0.85, 1.2); }
   try { localStorage.setItem(AKEY, JSON.stringify(aiLearn)); } catch (e) {}
 }
@@ -1837,7 +1837,7 @@ function startSession() {
     if (nm === 'Huks44') { kart = g; prevIdx = kart.idx; }
     else { const a = race.ai.find(x => x.name === nm); a.k = g; a.prev = g.idx; a.laps = 0; a.best = 0; a.lapStart = -1; a.finished = 0; a.lane = 0; a.pen = 0; a.penT = -9; a.stun = 0; }
   });
-  race.hugo = { laps: 0, best: 0, lapStart: -1, finished: 0, prev: kart.idx };
+  race.huks = { laps: 0, best: 0, lapStart: -1, finished: 0, prev: kart.idx };
   rec = null; Object.assign(inp, { throttle: 0, brake: 0, steer: 0 });
   beginStart();
   toast('🏁 <b>' + SESSIONS()[race.session] + '</b> · ' + RACE_LAPS + L(' ringi', ' laps') + '<br>' + L('Oota punaseid tulesid!', 'Wait for the red lights!'), 4);
@@ -1869,7 +1869,7 @@ function hitReact(k, ox, oz, imp) {
   const fwd = ox * Math.cos(k.h) + oz * Math.sin(k.h), side = -ox * Math.sin(k.h) + oz * Math.cos(k.h);
   // black flag: Huks44 rams the kart ahead of him -> 5 s added to his race time
   // black flag for whoever rams the kart ahead (Huks44 or an opponent): 5 s added to the race time
-  const own = k === kart ? race.hugo : race.ai.find(q => q.k === k);
+  const own = k === kart ? race.huks : race.ai.find(q => q.k === k);
   if (own && race.on && !race.done && imp > 1.6 && fwd > 0.5 && simT - (own.penT || -9) > 3) {
     own.pen = (own.pen || 0) + 5; own.penT = simT;
     const who = k === kart ? 'Huks44' : own.name;
@@ -1904,13 +1904,13 @@ function lapCount(o, k, idx) { // o = { laps, prev, best, lapStart, finished }
 }
 function raceStep(dt) {
   for (const a of race.ai) { if (a.finished && simT - a.finished > 4) { a.inp.throttle = 0; a.inp.brake = 0.4; } else aiDrive(a, dt); C.step(T, a.k, a.inp, dt); lapCount(a, a.k, a.k.idx); }
-  lapCount(race.hugo, kart, kart.idx);
+  lapCount(race.huks, kart, kart.idx);
   const ks = [kart, ...race.ai.map(a => a.k)];
   for (let i = 0; i < ks.length; i++) for (let j = i + 1; j < ks.length; j++) bump(ks[i], ks[j]);
-  if (race.hugo.finished && !race.done) finishSession();
+  if (race.huks.finished && !race.done) finishSession();
 }
 function standings() {
-  const rows = [{ name: 'Huks44', o: race.hugo, k: kart, me: true }, ...race.ai.map(a => ({ name: a.name, o: a, k: a.k }))];
+  const rows = [{ name: 'Huks44', o: race.huks, k: kart, me: true }, ...race.ai.map(a => ({ name: a.name, o: a, k: a.k }))];
   const prog = r => r.o.laps * n + (r.o.lapStart >= 0 ? ((r.k.idx - 0 + n) % n) : -((0 - r.k.idx + n) % n));
   if (race.session === 2) return rows.sort((a, b) => (a.o.best || 999) - (b.o.best || 999)); // qualifying: fastest lap
   return rows.sort((a, b) => (a.o.finished && b.o.finished) ? (a.o.finished + (a.o.pen || 0)) - (b.o.finished + (b.o.pen || 0)) : a.o.finished ? -1 : b.o.finished ? 1 : prog(b) - prog(a));
@@ -1921,13 +1921,13 @@ function finishSession() {
   const st = standings(), names = st.map(r => r.name);
   if (race.session === 2) race.qualiOrder = names; else race.order = names;
   const myPos = names.indexOf('Huks44') + 1;
-  race.results.push({ s: race.session, pos: myPos, best: race.hugo.best });
+  race.results.push({ s: race.session, pos: myPos, best: race.huks.best });
   const last = race.session === 3;
   raceBox.innerHTML = `<div style="width:min(560px,94vw);background:#121a26;border-radius:16px;padding:20px">
     <h2 style="margin:0 0 4px;font-family:var(--display)">🏁 ${SESSIONS()[race.session]} – ${L('tulemused', 'results')}</h2>
     <p style="margin:0 0 10px;font-size:18px">${myPos === 1 ? '🏆 ' + L('Võitsid!', 'You won!') : L('Sinu koht: ', 'Your place: ') + '<b>' + myPos + '.</b>'}</p>
     <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">${st.map((r, i) => `<tr style="${r.me ? 'color:#ffd54f;font-weight:700' : ''}"><td style="padding:4px">${i + 1}.</td><td>${r.name}</td><td style="text-align:right">${L('parim ring ', 'best ')}${fmt(r.o.best)}${r.o.pen ? ` <span style="color:#ff5252">+${r.o.pen} s</span>` : ''}</td></tr>`).join('')}</table>
-    ${hugoRef() ? `<p style="margin:10px 0 0;font-size:14px;color:#9fb0c0">🧠 ${L('Vastased õpivad sinu parimast ringist', 'The rivals learn from your best lap')} (${fmt(hugoRef())}). ${L('Mida kiiremini sõidad, seda kiiremaks nemad lähevad!', 'The faster you get, the faster they get!')}</p>` : ''}
+    ${huksRef() ? `<p style="margin:10px 0 0;font-size:14px;color:#9fb0c0">🧠 ${L('Vastased õpivad sinu parimast ringist', 'The rivals learn from your best lap')} (${fmt(huksRef())}). ${L('Mida kiiremini sõidad, seda kiiremaks nemad lähevad!', 'The faster you get, the faster they get!')}</p>` : ''}
     ${last ? `<h3 style="margin:14px 0 6px">${L('Kogu võistlus', 'Whole event')}</h3>${race.results.map(r => `<div>${SESSIONS()[r.s]}: ${r.pos}. ${L('koht', 'place')} · ${fmt(r.best)}</div>`).join('')}` : ''}
     <button type="button" id="rbNext" style="margin-top:14px;font:700 17px var(--body);background:#1f9d3a;color:#fff;border:0;border-radius:10px;padding:10px 18px;cursor:pointer">${last ? L('Uus võistlus', 'New event') : L('Järgmine: ', 'Next: ') + SESSIONS()[race.session + 1]} (Enter)</button></div>`;
   raceBox.style.display = 'flex';
@@ -2006,12 +2006,12 @@ function drawMini() {
   const dot = (x, z, c, r) => { g.fillStyle = c; g.beginPath(); g.arc(F.X(x), F.Z(z), r, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke(); };
   if (ghostMode & 1 && ghostPos.coach) dot(ghostPos.coach[0], ghostPos.coach[1], '#40c4ff', 6);
   if (ghostMode & 2 && ghostPos.best) dot(ghostPos.best[0], ghostPos.best[1], '#ffffff', 6);
-  if (ghostPos.hugo) dot(ghostPos.hugo[0], ghostPos.hugo[1], '#ffd600', 6);
+  if (ghostPos.huks) dot(ghostPos.huks[0], ghostPos.huks[1], '#ffd600', 6);
   dot(kart.x, kart.z, '#ff6d00', 7);
 }
 
 // ===== main loop =====
-const ghostPos = { coach: null, best: null, hugo: null };
+const ghostPos = { coach: null, best: null, huks: null };
 function ghostAt(r, t) {
   const G = r.ghost; if (!G || !G.length) return null;
   const f = t / 0.05, i = Math.floor(f); if (i >= G.length - 1) return G[G.length - 1];
@@ -2069,8 +2069,8 @@ function render(rdt) {
   const lt = rec ? simT - rec.t0 : -1;
   ghostPos.coach = lt >= 0 ? ghostAt(coach, lt % coach.time) : null;
   ghostPos.best = lt >= 0 && bestRec ? ghostAt(bestRec, lt) : null;
-  ghostPos.hugo = lt >= 0 && hugoOn ? ghostAt(coach, (lt * coach.time / hugoT) % coach.time) : null;
-  ghosts.hugo.g.visible = !!ghostPos.hugo; if (ghostPos.hugo) placeKart(ghosts.hugo, ghostPos.hugo[0], ghostPos.hugo[1], ghostPos.hugo[2], ghostPos.hugo[3], 0);
+  ghostPos.huks = lt >= 0 && huksOn ? ghostAt(coach, (lt * coach.time / huksT) % coach.time) : null;
+  ghosts.huks.g.visible = !!ghostPos.huks; if (ghostPos.huks) placeKart(ghosts.huks, ghostPos.huks[0], ghostPos.huks[1], ghostPos.huks[2], ghostPos.huks[3], 0);
   updateRain(rdt);
   for (const a of race.ai) { a.vis.g.visible = race.on && !!a.k; if (a.vis.g.visible) placeKart(a.vis, a.k.x, a.k.z, a.k.h, a.k.steer, 0, a.k.s * T.ds); }
   for (const [name, vis, bit] of [['coach', ghosts.coach, 1], ['best', ghosts.best, 2]]) {
@@ -2106,12 +2106,12 @@ function nextBoard(j) {
 function updateHud() {
   const k = kart, v = Math.hypot(k.vx, k.vy), j = k.idx;
   $('kSpd').textContent = kmh(v);
-  $('kHugoRow').style.display = hugoOn ? '' : 'none';
-  if (hugoOn) { const g = rec ? (simT - rec.t0) - coach.t[j] * hugoT / coach.time : 0; $('kHugoG').textContent = !rec ? fmt(hugoT) : (g > 0 ? '+' : '−') + Math.abs(g).toFixed(2) + ' s ' + (g > 0 ? L('taga', 'behind') : L('ees', 'ahead')); }
+  $('kHuksRow').style.display = huksOn ? '' : 'none';
+  if (huksOn) { const g = rec ? (simT - rec.t0) - coach.t[j] * huksT / coach.time : 0; $('kHuksG').textContent = !rec ? fmt(huksT) : (g > 0 ? '+' : '−') + Math.abs(g).toFixed(2) + ' s ' + (g > 0 ? L('taga', 'behind') : L('ees', 'ahead')); }
   $('kTgt').textContent = L('Treener siin: ', 'Coach here: ') + kmh(coach.v[j]) + ' km/h';
   const lt = rec ? simT - rec.t0 : 0;
   $('kLap').textContent = rec ? lt.toFixed(1) : L('stardijooneni', 'to the line');
-  $('kLapN').textContent = race.on ? SESSIONS()[race.session] + ' · ' + L('koht ', 'P') + (standings().findIndex(r => r.me) + 1) + '/6 · ' + L('ring ', 'lap ') + Math.min(RACE_LAPS, race.hugo.laps + 1) + '/' + RACE_LAPS : rec ? L('ring ', 'lap ') + (lapNo + 1) + (rec.valid ? '' : ' ❌') : '';
+  $('kLapN').textContent = race.on ? SESSIONS()[race.session] + ' · ' + L('koht ', 'P') + (standings().findIndex(r => r.me) + 1) + '/6 · ' + L('ring ', 'lap ') + Math.min(RACE_LAPS, race.huks.laps + 1) + '/' + RACE_LAPS : rec ? L('ring ', 'lap ') + (lapNo + 1) + (rec.valid ? '' : ' ❌') : '';
   // live delta: to your best lap if you have one, otherwise to the coach
   const ref = bestRec || coach;
   if (rec && rec.t[j] >= 0) {
@@ -2181,14 +2181,14 @@ function chooseMode(m) {
   if (fast) setFast(false);
   auto = false;
   if (m === 'race') {
-    showLine = false; raceLine.visible = false; showCoachBanner = true; hugoOn = false;
+    showLine = false; raceLine.visible = false; showCoachBanner = true; huksOn = false;
     if (!race.on) toggleRace(); else { race.session = 0; race.order = null; race.qualiOrder = null; race.results = []; raceBox.style.display = 'none'; startSession(); }
     toast('🏆 <b>' + L('Võistlus', 'Race') + '</b><br>' + L('Soojendussõit 1 algab! Pärast kvalifikatsiooni stardid finaalis oma koha järgi.', 'Warm-up 1 starts! After qualifying you start the final from your position.'), 5);
     return;
   }
   if (race.on) toggleRace();
-  if (m === 'free') { showLine = false; showCoachBanner = false; ghostMode = 0; hugoOn = false; }
-  else { showLine = true; showCoachBanner = true; ghostMode = 1; hugoOn = IS_LAITSE; }
+  if (m === 'free') { showLine = false; showCoachBanner = false; ghostMode = 0; huksOn = false; }
+  else { showLine = true; showCoachBanner = true; ghostMode = 1; huksOn = IS_LAITSE; }
   raceLine.visible = showLine;
   resetKart();
   toast(m === 'free' ? '🏎️ <b>' + L('Vabasõit', 'Free drive') + '</b><br>' + L('Oota, kuni punased tuled kustuvad, siis gaas!', 'Wait for the red lights to go out, then go!') : '🎯 <b>' + L('Treening', 'Practice') + '</b><br>' + L('Sinine on treener, kollane on Huks44 46.9. Sõida nende järel!', 'Blue is the coach, yellow is Huks44 46.9. Follow them!'), 5);
@@ -2212,7 +2212,7 @@ window.H44_BOARD = [];
 // ---------- Huks44 Karting extras (only in the standalone friends' game) ----------
 // Statistics and track records menu, a leaderboard built from time codes, and bigger phone buttons.
 // Friends' times reach the leaderboard as codes: a friend copies "Saada oma aeg" and sends it to Huks44,
-// who pastes it into "Lisa sõbra aeg", or Lauri gives the codes to Claude, who puts them in edetabel.json.
+// who pastes it into "Lisa sõbra aeg", or the admin gives the codes to Claude, who puts them in edetabel.json.
 (function () {
 'use strict';
 const $ = id => document.getElementById(id);
